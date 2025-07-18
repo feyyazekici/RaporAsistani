@@ -40,7 +40,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 st.set_page_config(page_title="Akıllı Rapor Asistanı", layout="wide", initial_sidebar_state="expanded")
 
 try:
-    # ... Bu kısım aynı ...
+    
     ABSTRACT_API_KEY = st.secrets["connections"]["abstract_api_key"]
     GOOGLE_API_KEY = st.secrets["connections"]["google_api_key"]
     N8N_WEBHOOK_URL = st.secrets["connections"]["n8n_webhook_url"]
@@ -52,7 +52,7 @@ except (KeyError, FileNotFoundError):
 
 # --- 2. SUPABASE BAĞLANTISI ---
 try:
-    # ... Bu kısım aynı ...
+    
     options = ClientOptions(postgrest_client_timeout=120, storage_client_timeout=120)
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY, options=options)
 except Exception as e:
@@ -64,8 +64,6 @@ except Exception as e:
 @st.cache_resource(show_spinner="Embedding modeli yükleniyor...")
 def get_embeddings_model():
     return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-
-# app.py'de diğer yardımcı fonksiyonların yanına ekleyin
 
 def verify_email_realness(email: str) -> bool:
     """Verilen e-postanın gerçekliğini Abstract API ile kontrol eder."""
@@ -201,10 +199,10 @@ def register_user(name, email, username, password):
         st.error(f"Kayıt sırasında bir veritabanı hatası oluştu: {e}"); return False
 
 # --- 5. ANA UYGULAMA AKIŞI ---
-st.title("Akıllı Rapor Asistanı 🤖")
+st.title("PDF RAG Sistemli Rapor Asistanı ")
 
 if not st.session_state.get("authentication_status"):
-    # ... Giriş/Kayıt kısmı aynı ...
+    
     st.info("Lütfen devam etmek için giriş yapın veya yeni bir hesap oluşturun.")
     login_tab, register_tab = st.tabs(["Giriş Yap", "Yeni Hesap Oluştur"])
     with login_tab:
@@ -216,7 +214,7 @@ if not st.session_state.get("authentication_status"):
                 else: st.error("Kullanıcı adı veya şifre yanlış")
     with register_tab:
         with st.form("register_form", border=False):
-            st.write("Yeni bir hesap oluşturun.") # Başlık ekleyelim
+            st.write("Yeni bir hesap oluşturun.") 
             name_reg = st.text_input("Ad Soyad")
             email_reg = st.text_input("E-posta Adresi")
             username_reg = st.text_input("Kullanıcı Adı")
@@ -249,7 +247,7 @@ else:
         st.session_state.clear(); st.session_state.update({"authentication_status": True, "username": username, "name": name, "last_known_user": username}); st.rerun()
     
     with st.sidebar:
-        # ... Sidebar'ın başı aynı ...
+        
         st.write(f'Hoş geldiniz, *{name}*');
         if st.button('Çıkış Yap'): st.session_state.clear(); st.rerun()
         st.markdown("---"); st.header("Yeni Rapor Yükle")
@@ -259,7 +257,7 @@ else:
         user_conversations = load_user_conversations(username)
         if 'active_conversation_id' not in st.session_state: st.session_state.active_conversation_id = None
         
-        # Sidebar sohbet listesi güncellendi
+       
         for conv in user_conversations:
             conv_id, conv_name, conv_path, conv_images = conv['id'], conv['conversation_name'], conv.get('storage_path'), conv.get('image_paths', [])
             col1, col2, col3 = st.columns([0.7, 0.15, 0.15])
@@ -285,7 +283,7 @@ else:
     if not active_conv:
         st.info("Başlamak için kenar çubuğundan bir sohbet seçin veya yeni bir rapor yükleyin.")
     else:
-        # ===== YÜKSEK PERFORMANSLI RAG MİMARİSİ BURADA BAŞLIYOR =====
+        
         conv_id, storage_path, image_paths = active_conv['id'], active_conv.get('storage_path'), active_conv.get('image_paths', [])
         messages = load_messages(conv_id)
         for msg in messages:
@@ -321,7 +319,7 @@ else:
                         # 3. LLM'i Doğrudan Çağır (Multi-modal için en temiz yol)
                         chat_history = [HumanMessage(content=msg["content"]) if msg["role"] == "user" else AIMessage(content=msg["content"]) for msg in messages]
                         
-                        # PERFORMANS ARTIŞI: Sisteme verilen talimatları netleştiriyoruz
+                        
                         system_prompt = """Sen, sana verilen metin bağlamı ve görselleri analiz ederek soruları cevaplayan bir uzmansın.
 - Cevabını oluştururken, kullandığın bilginin hangi metin kaynağından (Sayfa: X) geldiğini mutlaka belirt.
 - Eğer bilgi bir görselde ise, 'rapordaki ilgili grafiğe/görsele göre...' gibi bir ifade kullan.
